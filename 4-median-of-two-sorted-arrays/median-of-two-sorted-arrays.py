@@ -11,16 +11,16 @@ class Solution:
         #AND THE FIRST HALF OF THE FIRST ARRAY IS LESS THAN THE SECOND HALF OF ARR2
         #MEANING THAT IT IS A VALID PARTITION
 
-        if nums1 == []:
-            mid = len(nums2)//2
-            if len(nums2) % 2 == 0: 
-                return (nums2[mid] + nums2[mid-1])/2
-            else: return nums2[mid]
-        if nums2 == []:
-            mid = len(nums1)//2
-            if len(nums1) % 2 == 0: 
-                return (nums1[mid] + nums1[mid-1])/2
-            else: return nums1[mid]
+        # if nums1 == []:
+        #     mid = len(nums2)//2
+        #     if len(nums2) % 2 == 0: 
+        #         return (nums2[mid] + nums2[mid-1])/2
+        #     else: return nums2[mid]
+        # if nums2 == []:
+        #     mid = len(nums1)//2
+        #     if len(nums1) % 2 == 0: 
+        #         return (nums1[mid] + nums1[mid-1])/2
+        #     else: return nums1[mid]
 
         total = len(nums1) + len(nums2)
         tgt = int(total/2) if total % 2 == 0 else total//2 + 1
