@@ -11,8 +11,6 @@ class Solution:
         def getDiameter(node, maxSeen):
             
             if node == None: return 0
-            if node.left == None and node.right == None:
-                return 1
 
             maxDepthLeft = getDiameter(node.left, maxSeen)
             maxDepthRight = getDiameter(node.right, maxSeen)
