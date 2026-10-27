@@ -1,61 +1,46 @@
 import heapq
-from collections import defaultdict
+from typing import List
 
 class TaskManager:
 
     '''
-    General approach: we can use a max heap to rank the priorities
-    However, we'd like to maintain O(log n) for edit and remove, so we 
-    can't manually go and traverse the heap since we don't have a L->R ordering
-    invariant (just a height invariant)
 
-    Strategy: remove/edit hashmap instead 
-    then for exec top check if that node was supposed to be removed or not (or if its outdated)
-    since the state doesn't matter until we actually try and execute
+    we can keep a global dict that segregates users by the tasks
+    so we have a dictionary mapping task id to its corresponding user and priority
+    we keep a max heap to get the task with the highest pripotiy
+    we use the dictionary as a method to keep the canonical version true
 
     '''
 
     def __init__(self, tasks: List[List[int]]):
-        
-        #store in heap + dict
-        self.pheap = []
-        self.task_dict = defaultdict(tuple)
-        for task in tasks:
-            heapq.heappush(self.pheap, (-task[2], -task[1], task[0]))
-            # taskid -> (user id, priority)
-            self.task_dict[task[1]] = (task[0], task[2])
+
+        self.taskdict = {}
+        self.maxheap = []
+        for userId, taskId, priority in tasks:
+            self.add(userId, taskId, priority)
+
 
     def add(self, userId: int, taskId: int, priority: int) -> None:
-        self.task_dict[taskId] = (userId, priority)
-        heapq.heappush(self.pheap, (-priority, -taskId, userId))
-        
+        self.taskdict[taskId] = [userId, priority]
+        # because the task id is the tiebreaker
+        heapq.heappush(self.maxheap, (-priority, -taskId))
+
     def edit(self, taskId: int, newPriority: int) -> None:
-        #edit the dictionary version
-        self.task_dict[taskId] = (self.task_dict[taskId][0], newPriority)
-        #add this as a new element to the heap
-        self.add(self.task_dict[taskId][0], taskId, newPriority)
+        self.taskdict[taskId][1] = newPriority
+        heapq.heappush(self.maxheap, (-newPriority, -taskId))
 
     def rmv(self, taskId: int) -> None:
-        # remove the dictionary version
-        del self.task_dict[taskId]
+        del self.taskdict[taskId]
+        # lazy deletion from heap
 
     def execTop(self) -> int:
-
-        #get top of the heap, check if valid, if not continue popping
-        while len(self.pheap) != 0:
-            (p, taskId, userId) = heapq.heappop(self.pheap)
-            #same priority task can be added to a different user so just check
-            #if the current entry is the same as the currently up to date
-            if -taskId in self.task_dict and (userId, -p) == self.task_dict[-taskId]:
-                self.rmv(-taskId)
-                return userId
-
+        while self.maxheap:
+            # get the highest entry and check if its stale or not
+            negP, negT = heapq.heappop(self.maxheap)
+            taskId = -negT
+            p = -negP
+            if taskId in self.taskdict and self.taskdict[taskId][1] == p:
+                res = self.taskdict[taskId][0]
+                self.rmv(taskId)
+                return res
         return -1
-
-
-# Your TaskManager object will be instantiated and called as such:
-# obj = TaskManager(tasks)
-# obj.add(userId,taskId,priority)
-# obj.edit(taskId,newPriority)
-# obj.rmv(taskId)
-# param_4 = obj.execTop()
